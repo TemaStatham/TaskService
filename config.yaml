@@ -1,13 +1,16 @@
-env: "local" # dev, prod
-storage_paths: "./storage/sso.db"
-token_ttl: "1h"
 server:
-  port: "8000"
+  port: "8080"
   host: "localhost"
 db:
   port: "5432"
-  host: "localhost"
+  host: "dapomogu_task_postgres"
   username: "postgres"
-  dbname: "postgres"
+  dbname: "dapomogu_task_postgres_db"
   ssl_mode: "disable"
-  password: "qwerty"
+  password: "dapomogu_password"
+kafka:
+  port: "9092"
+  host: "kafka"
+  users_topic: "users_topic"
+  group_id: "users_group"
+jwt_secret: "secretJWT"

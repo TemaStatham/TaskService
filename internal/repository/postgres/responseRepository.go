@@ -44,7 +44,7 @@ func (r *ResponseRepository) Create(ctx context.Context, taskId, userId uint, st
 }
 
 func (r *ResponseRepository) Show(ctx context.Context, taskId uint, pagination *paginate.Pagination) (*paginate.Pagination, error) {
-	var responses []*model.Task
+	var responses []*model.Response
 
 	res := r.db.
 		Where("task_id = ?", taskId).

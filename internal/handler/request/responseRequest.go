@@ -17,3 +17,14 @@ type UpdateResponseRequest struct {
 	ID     uint   `json:"response_id"`
 	Status string `json:"status"`
 }
+
+/*{
+    "task_id": 1,
+    "pagination": {
+        "limit": 10,
+        "page": 1,
+        "total_rows": 100,
+        "total_pages": 10,
+        "rows": []
+    }
+}*/

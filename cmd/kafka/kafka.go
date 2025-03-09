@@ -5,67 +5,58 @@ import (
 	"github.com/IBM/sarama"
 	_ "github.com/segmentio/kafka-go"
 	"log"
+	"math/rand"
+	"os"
 )
 
 // Наша структура для сообщения
-type MyMessage struct {
-	ID    string `json:"id"`
-	Value string `json:"value"`
+type Message struct {
+	Id    int    `json:"id"`
+	Email string `json:"email"`
+	Role  int16  `json:"role"`
 }
 
 func main() {
-	// Создание продюсера Kafka
-	producer, err := sarama.NewSyncProducer([]string{"kafka:9092"}, nil)
+	brokers := []string{"localhost:9092"}
+	config := sarama.NewConfig()
+	config.Version = sarama.V2_0_0_0
+	config.Producer.Return.Successes = true
+	producer, err := sarama.NewSyncProducer(brokers, config)
 	if err != nil {
-		log.Fatalf("Failed to create producer: %v", err)
+		log.Fatalln("Failed to start Sarama producer:", err)
+		os.Exit(1)
 	}
-	defer producer.Close()
 
-	// Создание консьюмера Kafka
-	consumer, err := sarama.NewConsumer([]string{"kafka:9092"}, nil)
-	if err != nil {
-		log.Fatalf("Failed to create consumer: %v", err)
-	}
-	defer consumer.Close()
-
-	// Подписка на партицию "ping" в Kafka
-	partConsumer, err := consumer.ConsumePartition("ping", 0, sarama.OffsetNewest)
-	if err != nil {
-		log.Fatalf("Failed to consume partition: %v", err)
-	}
-	defer partConsumer.Close()
+	// Dummy Data
+	userId := [5]int{100001, 100002, 100003, 100004, 100005}
+	emails := [5]string{"POST00001", "POST00002", "POST00003", "POST00004", "POST00005"}
+	roles := [5]int16{1, 2, 3, 4, 5}
 
 	for {
-		select {
-		// (обработка входящего сообщения и отправка ответа в Kafka)
-		case msg, ok := <-partConsumer.Messages():
-			if !ok {
-				log.Println("Channel closed, exiting")
-				return
-			}
-
-			// Десериализация входящего сообщения из JSON
-			var receivedMessage MyMessage
-			err := json.Unmarshal(msg.Value, &receivedMessage)
-
-			if err != nil {
-				log.Printf("Error unmarshaling JSON: %v\n", err)
-				continue
-			}
-
-			log.Printf("Received message: %+v\n", receivedMessage)
-
-			// Формируем ответное сообщение
-			resp := &sarama.ProducerMessage{
-				Topic: "users-topic",
-				Key:   sarama.StringEncoder(receivedMessage.ID),
-				Value: sarama.StringEncoder(""),
-			}
-			// Отпровляем ответ в gateway
-			_, _, err = producer.SendMessage(resp)
-			if err != nil {
-				log.Printf("Failed to send message to Kafka: %v", err)
-			}
+		// we are going to take random data from the dummy data
+		message := Message{
+			Id:    userId[rand.Intn(len(userId))],
+			Email: emails[rand.Intn(len(emails))],
+			Role:  roles[rand.Intn(len(roles))],
 		}
+
+		jsonMessage, err := json.Marshal(message)
+
+		if err != nil {
+			log.Fatalln("Failed to marshal message:", err)
+			os.Exit(1)
+		}
+
+		msg := &sarama.ProducerMessage{
+			Topic: "users_topic",
+			Value: sarama.StringEncoder(jsonMessage),
+		}
+
+		_, _, err = producer.SendMessage(msg)
+		if err != nil {
+			log.Fatalln("Failed to send message:", err)
+			os.Exit(1)
+		}
+		log.Println("Message sent!")
 	}
 }

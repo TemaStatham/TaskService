@@ -15,7 +15,7 @@ const (
 	userCtx             = "userId"
 )
 
-func UserIdentity() gin.HandlerFunc {
+func UserIdentity(jwtSecret string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		header := c.GetHeader(authorizationHeader)
 		if header == "" {
@@ -34,13 +34,13 @@ func UserIdentity() gin.HandlerFunc {
 			return
 		}
 
-		userId, err := jwt.ParseToken(headerParts[1])
+		userId, err := jwt.ValidateToken(headerParts[1], jwtSecret)
 		if err != nil {
 			response.NewErrorResponse(c, http.StatusUnauthorized, err.Error())
 			return
 		}
 
-		c.Set(userCtx, userId)
+		c.Set(userCtx, userId.UserID)
 	}
 }
 

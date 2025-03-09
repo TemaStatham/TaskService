@@ -105,7 +105,7 @@ func (h *Handler) getTask(c *gin.Context) {
 }
 
 func (h *Handler) getTasks(c *gin.Context) {
-	_, err := auth.GetUserId(c)
+	authUser, err := auth.GetUserId(c)
 	if err != nil {
 		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
@@ -118,7 +118,7 @@ func (h *Handler) getTasks(c *gin.Context) {
 		return
 	}
 
-	pag, err := h.TaskService.Show(c.Request.Context(), &input.Pagination)
+	pag, err := h.TaskService.Show(c.Request.Context(), &input.Pagination, authUser)
 	if err != nil {
 		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return

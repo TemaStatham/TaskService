@@ -31,4 +31,4 @@ RUN chmod +x /myapp
 EXPOSE 8080
 
 # Запускаем приложение
-CMD ["/myapp", "--config=./app/config.yaml"]
+CMD ["/myapp", "--config=./config.yaml"]

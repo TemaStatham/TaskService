@@ -61,7 +61,7 @@ func (t *TaskRepository) Update(ctx context.Context, dto request.UpdateTaskReque
 }
 
 func (t *TaskRepository) Delete(ctx context.Context, id uint) error {
-	res := t.db.Delete(id)
+	res := t.db.Delete(&model.Task{}, id)
 	if res.Error != nil {
 		return res.Error
 	}

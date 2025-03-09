@@ -4,10 +4,10 @@ import (
 	"context"
 	"github.com/TemaStatham/TaskService/internal/config"
 	"github.com/TemaStatham/TaskService/internal/handler"
+	"github.com/TemaStatham/TaskService/internal/repository"
 	"github.com/TemaStatham/TaskService/internal/repository/postgres"
 	"github.com/TemaStatham/TaskService/internal/service"
 	"github.com/TemaStatham/TaskService/pkg/db"
-	"github.com/TemaStatham/TaskService/pkg/kafka"
 	"github.com/TemaStatham/TaskService/pkg/server"
 	"log"
 	"os"
@@ -18,7 +18,7 @@ import (
 type App struct {
 }
 
-func New(env string) *App {
+func New() *App {
 	return &App{}
 }
 
@@ -41,6 +41,7 @@ func (a *App) Run(cfg *config.Config) error {
 	if err != nil {
 		return err
 	}
+	repository.Migrate(dbg)
 
 	taskRep := postgres.NewTaskPostgresRepository(dbg)
 	commRep := postgres.NewCommentsRepository(dbg)
@@ -50,20 +51,21 @@ func (a *App) Run(cfg *config.Config) error {
 	taskServ := service.NewTaskService(taskRep, userRep)
 	commServ := service.NewCommentService(commRep)
 	respServ := service.NewResponseService(respRep)
-	userServ := service.NewUserService(userRep)
+	// userServ := service.NewUserService(userRep)
 
-	kafka.StartKafkaConsumer([]string{"localhost:9092"}, "users-topic", "", func(key, value []byte) {
-		err := userServ.CreateFromKafka(key, value)
-		if err != nil {
-			log.Println(err)
-		}
-	})
+	// todo: продумать логику получения организаций по кафке
+	// todo: запихнуть создание топиков в докер
+	// todo: протестить вебсокеты
+	// todo: написать фенкциональные тесты
+	// todo: разобраться с связью организаций и пользователей
+	kafkaServ := service.NewKafkaService(*userRep)
+	go kafkaServ.StartConsume(cfg.KConfig)
 
 	hand := handler.NewTaskHandler(taskServ, respServ, commServ)
 
 	serve := new(server.Server)
 	go func() {
-		if err := serve.Run(cfg.SConfig.Port, hand.Init()); err != nil {
+		if err := serve.Run(cfg.SConfig.Port, hand.Init(cfg.JWTSecret)); err != nil {
 			log.Fatal(err)
 		}
 	}()

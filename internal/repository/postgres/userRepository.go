@@ -29,9 +29,12 @@ func (u *UserRepository) Get(ctx context.Context, id uint) (*model.User, error) 
 }
 
 func (u *UserRepository) Create(ctx context.Context, user *model.User) error {
-	res := u.db.Create(user)
+	res := u.db.Save(user)
 	if res.Error != nil {
-		return errors.New("user not found" + res.Error.Error())
+		res = u.db.Updates(user)
+		if res.Error != nil {
+			return errors.New("user not found" + res.Error.Error())
+		}
 	}
 
 	return nil

@@ -8,7 +8,7 @@ dropdb:
 	docker exec -it dapomogu_task_postgres dropdb --username=postgres dapomogu_task_db
 
 migrateup:
-	migrate -path migrations -database "postgresql://postgres:dapomogu_password@localhost:5436/dapomogu_task_db?sslmode=disable" -verbose up
+	migrate -path migrations -database "postgresql://postgres:dapomogu_password@dapomogu_task_postgres:5432/dapomogu_task_db?sslmode=disable" -verbose up
 
 migratedown:
 	migrate -path migrations -database "postgresql://postgres:dapomogu_password@localhost:5436/dapomogu_task_db?sslmode=disable" -verbose down

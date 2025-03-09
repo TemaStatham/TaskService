@@ -2,48 +2,76 @@ package jwt
 
 import (
 	"errors"
-	"github.com/TemaStatham/TaskService/internal/model"
-	"github.com/dgrijalva/jwt-go"
+	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
+	"os"
+	"strings"
 	"time"
 )
 
-const (
-	signingKey = "qrkjk#4#%35FSFJlja#4353KSFjH"
-)
-
-type tokenClaims struct {
-	jwt.StandardClaims
-	UserId uint `json:"user_id"`
+type Claims struct {
+	UserID uint `json:"user_id"`
+	jwt.RegisteredClaims
 }
 
-func NewToken(user model.User, duration time.Duration) (string, error) {
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &tokenClaims{
-		jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(duration).Unix(),
-			IssuedAt:  time.Now().Unix(),
+func GenerateToken(userID uint, jwtSecretKey string) (string, error) {
+	expirationTime := time.Now().Add(24 * time.Hour)
+	claims := &Claims{
+		UserID: userID,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(expirationTime),
 		},
-		user.ID,
-	})
+	}
 
-	return token.SignedString([]byte(signingKey))
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString([]byte(jwtSecretKey))
 }
 
-func ParseToken(tokenString string) (uint, error) {
-	token, err := jwt.ParseWithClaims(tokenString, &tokenClaims{}, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, errors.New("invalid signing method")
-		}
-
-		return []byte(signingKey), nil
+func ValidateToken(tokenString string, jwtSecretKey string) (*Claims, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte(jwtSecretKey), nil
 	})
+
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
-	claims, ok := token.Claims.(*tokenClaims)
+	claims, ok := token.Claims.(*Claims)
+	if !ok || !token.Valid {
+		return nil, errors.New("invalid token")
+	}
+
+	return claims, nil
+}
+
+func GetUserIDFromToken(c *gin.Context) (uint, error) {
+	tokenString := c.GetHeader("Authorization")
+	if tokenString == "" {
+		return 0, errors.New("missing token")
+	}
+
+	tokenParts := strings.Split(tokenString, " ")
+	if len(tokenParts) != 2 {
+		return 0, errors.New("invalid token format")
+	}
+	tokenString = tokenParts[1]
+
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		return []byte(os.Getenv("JWT_SECRET_KEY")), nil
+	})
+	if err != nil || !token.Valid {
+		return 0, errors.New("invalid token")
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok {
-		return 0, errors.New("token claims are not of type *tokenClaims")
+		return 0, errors.New("invalid token claims")
 	}
 
-	return claims.UserId, nil
+	userIDFloat, ok := claims["user_id"].(float64)
+	if !ok {
+		return 0, errors.New("invalid user ID")
+	}
+
+	return uint(userIDFloat), nil
 }

@@ -13,8 +13,8 @@ import (
 var (
 	ErrTaskIdIsEmpty      = errors.New("task id is empty")
 	ErrTaskNameIsEmpty    = errors.New("task name is empty")
-	ErrUserIsNotValid     = errors.New("user is not found")
-	ErrUserIsNotValidRole = errors.New("user is not found")
+	ErrUserIsNotValid     = errors.New("user is not found valid")
+	ErrUserIsNotValidRole = errors.New("user is not found valid role")
 )
 
 type TaskRepository interface {
@@ -132,7 +132,7 @@ func (t *TaskService) Validate(ctx context.Context, user uint, validRoles map[in
 		return ErrUserIsNotValid
 	}
 
-	if validRoles[auth.Role] {
+	if !validRoles[auth.Role] {
 		return ErrUserIsNotValidRole
 	}
 

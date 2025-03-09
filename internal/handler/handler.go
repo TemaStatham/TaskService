@@ -48,11 +48,11 @@ func NewTaskHandler(taskService TaskService, responseService ResponseService, co
 	}
 }
 
-func (h *Handler) Init() *gin.Engine {
+func (h *Handler) Init(jwtSecret string) *gin.Engine {
 	router := gin.New()
 
 	router.Use(cors.Default())
-	router.Use(auth.UserIdentity())
+	router.Use(auth.UserIdentity(jwtSecret))
 
 	tasks := router.Group("/tasks")
 	{

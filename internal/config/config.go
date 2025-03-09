@@ -4,16 +4,20 @@ import (
 	"flag"
 	"github.com/ilyakaznacheev/cleanenv"
 	"os"
-	"time"
 )
 
 type Config struct {
-	Env          string         `yaml:"env" env-default:"local"`
-	StoragePaths string         `yaml:"storage_paths" env-required:"true"`
-	TokenTTL     time.Duration  `yaml:"token_ttl" env-required:"true"`
-	Port         int            `yaml:"port" env-default:"8080"`
-	SConfig      ServerConfig   `yaml:"server" env-required:"true"`
-	DBConfig     DataBaseConfig `yaml:"db" env-required:"true"`
+	SConfig   ServerConfig   `yaml:"server" env-required:"true"`
+	DBConfig  DataBaseConfig `yaml:"db" env-required:"true"`
+	KConfig   KafkaConfig    `yaml:"kafka" env-required:"true"`
+	JWTSecret string         `yaml:"jwt_secret" env-required:"true"`
+}
+
+type KafkaConfig struct {
+	Port       string `yaml:"port" env-default:"9092"`
+	Host       string `yaml:"host" env-default:"kafka"`
+	UsersTopic string `yaml:"users_topic" env-default:"users_topic"`
+	GroupsId   string `yaml:"group_id" env-default:"users_group"`
 }
 
 type ServerConfig struct {
@@ -22,11 +26,11 @@ type ServerConfig struct {
 }
 
 type DataBaseConfig struct {
-	Port     string `yaml:"port" env-default:"5436"`
+	Port     string `yaml:"port" env-default:"5435"`
 	Host     string `yaml:"host" env-default:"localhost"`
 	Username string `yaml:"username" env-required:"true"`
 	DBName   string `yaml:"dbname" env-required:"true"`
-	SSLMode  string `yaml:"ssl_mode" env-default:"5436"`
+	SSLMode  string `yaml:"ssl_mode" env-default:"disable"`
 	Password string `yaml:"password" env-required:"true"`
 }
 
