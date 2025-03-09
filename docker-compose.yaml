@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  dapomogu_task_postgres:
+    container_name: dapomogu_task_postgres
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dapomogu_password}
+      PGDATA: /data/postgres
+    volumes:
+      - postgres:/data/postgres
+    ports:
+      - "5432:5432"
+    networks:
+      - postgres
+    restart: unless-stopped
+
+  dapomogu_task_service:
+    container_name: dapomogu_task_service
+    build:
+      context: .
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dapomogu_password}
+      DB_NAME: ${DB_NAME:-dapomogu_task_db}
+    depends_on:
+      - dapomogu_task_postgres
+    ports:
+      - "8080:8080"
+    networks:
+      - postgres
+    restart: unless-stopped
+
+networks:
+  postgres:
+    driver: bridge
+
+volumes:
+  postgres:
+  pgadmin:
