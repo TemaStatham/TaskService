@@ -4,13 +4,19 @@ import (
 	"context"
 	"errors"
 	"github.com/TemaStatham/TaskService/internal/handler/request"
+	"github.com/TemaStatham/TaskService/internal/model"
 	"github.com/TemaStatham/TaskService/pkg/paginate"
 )
 
 type ResponseRepository interface {
-	Create(ctx context.Context, taskId, userId uint, status string) (uint, error)
-	Show(ctx context.Context, taskId uint, pagination *paginate.Pagination) (*paginate.Pagination, error)
-	Update(ctx context.Context, id uint, status string) error
+	Get(ctx context.Context, id uint) (*model.ResponseModel, error)
+	Create(ctx context.Context, taskId, userId uint, status uint) (uint, error)
+	Show(
+		ctx context.Context,
+		taskId uint,
+		pagination *paginate.Pagination,
+	) (*paginate.Pagination, error)
+	Update(ctx context.Context, id uint, status uint) error
 }
 
 type ResponseService struct {
@@ -23,12 +29,16 @@ func NewResponseService(repository ResponseRepository) *ResponseService {
 	}
 }
 
-func (r *ResponseService) Create(ctx context.Context, dto request.CreateResponseRequest, user uint) (uint, error) {
-	if dto.UserId < 0 {
+func (r *ResponseService) Create(
+	ctx context.Context,
+	dto *request.CreateResponseRequest,
+	user uint,
+) (uint, error) {
+	if user < 0 {
 		return 0, errors.New("invalid user id")
 	}
 
-	id, err := r.ResponseRepository.Create(ctx, dto.TaskId, dto.UserId, dto.Status)
+	id, err := r.ResponseRepository.Create(ctx, dto.TaskId, user, dto.Status)
 	if err != nil {
 		return 0, err
 	}
@@ -36,12 +46,17 @@ func (r *ResponseService) Create(ctx context.Context, dto request.CreateResponse
 	return id, nil
 }
 
-func (r *ResponseService) Show(ctx context.Context, dto request.GetResponseRequest, user uint) (*paginate.Pagination, error) {
+func (r *ResponseService) Show(
+	ctx context.Context,
+	dto *request.GetResponseRequest,
+) (*paginate.Pagination, error) {
 	if dto.TaskId < 0 {
 		return &paginate.Pagination{}, errors.New("invalid task id")
 	}
 
-	pag, err := r.ResponseRepository.Show(ctx, dto.TaskId, &dto.Pagination)
+	pagination := paginate.Pagination{}
+
+	pag, err := r.ResponseRepository.Show(ctx, dto.TaskId, &pagination)
 	if err != nil {
 		return &paginate.Pagination{}, err
 	}
@@ -49,7 +64,10 @@ func (r *ResponseService) Show(ctx context.Context, dto request.GetResponseReque
 	return pag, nil
 }
 
-func (r *ResponseService) Update(ctx context.Context, dto request.UpdateResponseRequest, user uint) error {
+func (r *ResponseService) Update(
+	ctx context.Context,
+	dto *request.UpdateResponseRequest,
+) error {
 	if dto.ID < 0 {
 		return errors.New("invalid id")
 	}

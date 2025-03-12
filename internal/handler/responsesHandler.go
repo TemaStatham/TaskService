@@ -22,7 +22,7 @@ func (h *Handler) createResponse(c *gin.Context) {
 		return
 	}
 
-	id, err := h.ResponseService.Create(c.Request.Context(), input, authUser)
+	id, err := h.ResponseService.Create(c.Request.Context(), &input, authUser)
 	if err != nil {
 		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
@@ -34,7 +34,7 @@ func (h *Handler) createResponse(c *gin.Context) {
 }
 
 func (h *Handler) getResponses(c *gin.Context) {
-	authUser, err := auth.GetUserId(c)
+	_, err := auth.GetUserId(c)
 	if err != nil {
 		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
@@ -47,7 +47,7 @@ func (h *Handler) getResponses(c *gin.Context) {
 		return
 	}
 
-	pag, err := h.ResponseService.Show(c.Request.Context(), input, authUser)
+	pag, err := h.ResponseService.Show(c.Request.Context(), &input)
 	if err != nil {
 		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
@@ -59,7 +59,7 @@ func (h *Handler) getResponses(c *gin.Context) {
 }
 
 func (h *Handler) updateResponse(c *gin.Context) {
-	authUser, err := auth.GetUserId(c)
+	_, err := auth.GetUserId(c)
 	if err != nil {
 		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
@@ -72,7 +72,7 @@ func (h *Handler) updateResponse(c *gin.Context) {
 		return
 	}
 
-	err = h.ResponseService.Update(c.Request.Context(), input, authUser)
+	err = h.ResponseService.Update(c.Request.Context(), &input)
 	if err != nil {
 		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return

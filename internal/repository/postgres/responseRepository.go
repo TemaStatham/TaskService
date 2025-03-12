@@ -17,8 +17,8 @@ func NewResponseRepository(db *gorm.DB) *ResponseRepository {
 	}
 }
 
-func (r *ResponseRepository) Get(ctx context.Context, id uint) (*model.Response, error) {
-	var response model.Response
+func (r *ResponseRepository) Get(ctx context.Context, id uint) (*model.ResponseModel, error) {
+	var response model.ResponseModel
 
 	res := r.db.First(&response, "id = ?", id)
 	if res.Error != nil {
@@ -28,11 +28,15 @@ func (r *ResponseRepository) Get(ctx context.Context, id uint) (*model.Response,
 	return &response, nil
 }
 
-func (r *ResponseRepository) Create(ctx context.Context, taskId, userId uint, status string) (uint, error) {
-	response := &model.Response{
-		TaskID: taskId,
-		UserID: userId,
-		Status: status,
+func (r *ResponseRepository) Create(
+	ctx context.Context,
+	taskId, userId uint,
+	status uint,
+) (uint, error) {
+	response := &model.ResponseModel{
+		TaskID:   taskId,
+		UserID:   userId,
+		StatusID: status,
 	}
 
 	res := r.db.Create(response)
@@ -43,8 +47,12 @@ func (r *ResponseRepository) Create(ctx context.Context, taskId, userId uint, st
 	return response.ID, res.Error
 }
 
-func (r *ResponseRepository) Show(ctx context.Context, taskId uint, pagination *paginate.Pagination) (*paginate.Pagination, error) {
-	var responses []*model.Response
+func (r *ResponseRepository) Show(
+	ctx context.Context,
+	taskId uint,
+	pagination *paginate.Pagination,
+) (*paginate.Pagination, error) {
+	var responses []*model.ResponseModel
 
 	res := r.db.
 		Where("task_id = ?", taskId).
@@ -59,15 +67,15 @@ func (r *ResponseRepository) Show(ctx context.Context, taskId uint, pagination *
 	return pagination, nil
 }
 
-func (r *ResponseRepository) Update(ctx context.Context, id uint, status string) error {
-	var response model.Response
+func (r *ResponseRepository) Update(ctx context.Context, id uint, status uint) error {
+	var response model.ResponseModel
 
 	res := r.db.First(&response, "id = ?", id)
 	if res.Error != nil {
 		return res.Error
 	}
 
-	response.Status = status
+	response.StatusID = status
 
 	res = r.db.Model(&response).Update("status", status)
 	if res.Error != nil {

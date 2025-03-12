@@ -9,10 +9,6 @@ import (
 	"gorm.io/gorm"
 )
 
-const (
-	taskTable = "tasks"
-)
-
 type TaskRepository struct {
 	db *gorm.DB
 }
@@ -23,17 +19,17 @@ func NewTaskPostgresRepository(db *gorm.DB) *TaskRepository {
 	}
 }
 
-func (t *TaskRepository) Create(ctx context.Context, dto request.CreateTaskRequest) (uint, error) {
-	task := &model.Task{
-		OrganizationID:    dto.OrganizationID,
-		Title:             dto.Title,
-		Type:              dto.Type,
+func (t *TaskRepository) Create(ctx context.Context, dto *request.CreateTaskRequest) (uint, error) {
+	task := &model.TaskModel{
+		OrganizationID:    dto.Organization.ID,
+		Name:              dto.Name,
+		TypeID:            dto.TaskType.ID,
 		Description:       dto.Description,
 		Location:          dto.Location,
 		TaskDate:          dto.TaskDate,
 		ParticipantsCount: dto.ParticipantsCount,
 		MaxScore:          dto.MaxScore,
-		Status:            dto.Status,
+		StatusID:          dto.TaskStatus.ID,
 	}
 
 	res := t.db.Create(&task)
@@ -44,8 +40,8 @@ func (t *TaskRepository) Create(ctx context.Context, dto request.CreateTaskReque
 	return task.ID, nil
 }
 
-func (t *TaskRepository) Update(ctx context.Context, dto request.UpdateTaskRequest) error {
-	var task model.Task
+func (t *TaskRepository) Update(ctx context.Context, dto *request.UpdateTaskRequest) error {
+	var task model.TaskModel
 
 	res := t.db.First(&task, "id = ?", dto.ID)
 	if res.Error != nil {
@@ -61,7 +57,7 @@ func (t *TaskRepository) Update(ctx context.Context, dto request.UpdateTaskReque
 }
 
 func (t *TaskRepository) Delete(ctx context.Context, id uint) error {
-	res := t.db.Delete(&model.Task{}, id)
+	res := t.db.Delete(&model.TaskModel{}, id)
 	if res.Error != nil {
 		return res.Error
 	}
@@ -69,8 +65,8 @@ func (t *TaskRepository) Delete(ctx context.Context, id uint) error {
 	return nil
 }
 
-func (t *TaskRepository) Get(ctx context.Context, id uint) (*model.Task, error) {
-	var task model.Task
+func (t *TaskRepository) Get(ctx context.Context, id uint) (*model.TaskModel, error) {
+	var task model.TaskModel
 
 	res := t.db.First(&task, "id = ?", id)
 	if res.Error != nil {
@@ -80,16 +76,20 @@ func (t *TaskRepository) Get(ctx context.Context, id uint) (*model.Task, error) 
 	return &task, nil
 }
 
-func (t *TaskRepository) GetAll(ctx context.Context, paginat *paginate.Pagination, user uint) (*paginate.Pagination, error) {
-	var tasks []*model.Task
+func (t *TaskRepository) GetAll(
+	ctx context.Context,
+	pagination *paginate.Pagination,
+	user uint,
+) (*paginate.Pagination, error) {
+	var tasks []*model.TaskModel
 
-	// todo : добавить фильтр, что показывать нужно только общие все и закрытые для организаций в которых состоит пользователь
-	res := t.db.Scopes(paginate.Paginate(tasks, paginat, t.db)).Find(&tasks)
+	// todo : добавить фильтр, что показывать нужно только общие все и закрытые задания
+	res := t.db.Scopes(paginate.Paginate(tasks, pagination, t.db)).Find(&tasks)
 	if res.Error != nil {
 		return nil, res.Error
 	}
 
-	paginat.Rows = tasks
+	pagination.Rows = tasks
 
-	return paginat, nil
+	return pagination, nil
 }

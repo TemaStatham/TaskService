@@ -19,7 +19,7 @@ func main() {
 
 	a := app.New()
 
-	//go kafka(*cfg)
+	go kafka(*cfg)
 
 	a.MustRun(cfg)
 }

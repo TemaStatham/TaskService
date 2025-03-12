@@ -1,8 +1,22 @@
 package model
 
-type User struct {
-	ID            uint           `gorm:"primaryKey;autoIncrement" json:"id"`
-	Email         string         `gorm:"unique;not null" json:"email" binding:"required"`
-	Role          int16          `gorm:"not null" json:"role" binding:"required"`
-	Organizations []Organization `gorm:"many2many:users_organizations" json:"organizations" binding:"required"`
+/*
+CREATE TABLE "user" (
+
+	"id" SERIAL PRIMARY KEY,
+	"surname" VARCHAR(255),
+	"name" VARCHAR(255) NOT NULL,
+	"is_admin" BOOLEAN DEFAULT false
+
+);
+*/
+type UserModel struct {
+	ID      uint    `gorm:"column:id;primaryKey;autoIncrement" json:"id" binding:"required"`
+	Surname *string `gorm:"column:surname;" json:"surname" binding:"required"`
+	Name    string  `gorm:"column:name;not null" json:"name" binding:"required"`
+	IsAdmin bool    `gorm:"column:is_admin;" json:"is_admin" binding:"required"`
+}
+
+func (UserModel) TableName() string {
+	return "user"
 }

@@ -3,9 +3,8 @@ package request
 import "github.com/TemaStatham/TaskService/pkg/paginate"
 
 type CreateResponseRequest struct {
-	TaskId uint   `json:"task_id"`
-	UserId uint   `json:"user_id"`
-	Status string `json:"status"`
+	TaskId uint `json:"task_id"`
+	Status uint `json:"status"`
 }
 
 type GetResponseRequest struct {
@@ -14,17 +13,6 @@ type GetResponseRequest struct {
 }
 
 type UpdateResponseRequest struct {
-	ID     uint   `json:"response_id"`
-	Status string `json:"status"`
+	ID     uint `json:"response_id"`
+	Status uint `json:"status"`
 }
-
-/*{
-    "task_id": 1,
-    "pagination": {
-        "limit": 10,
-        "page": 1,
-        "total_rows": 100,
-        "total_pages": 10,
-        "rows": []
-    }
-}*/

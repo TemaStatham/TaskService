@@ -7,7 +7,6 @@ import (
 	"github.com/TemaStatham/TaskService/internal/handler/request"
 	"github.com/TemaStatham/TaskService/internal/model"
 	"github.com/TemaStatham/TaskService/pkg/paginate"
-	"github.com/TemaStatham/TaskService/pkg/roles"
 )
 
 var (
@@ -18,11 +17,15 @@ var (
 )
 
 type TaskRepository interface {
-	Get(ctx context.Context, id uint) (*model.Task, error)
-	GetAll(ctx context.Context, paginat *paginate.Pagination, user uint) (*paginate.Pagination, error)
+	Get(ctx context.Context, id uint) (*model.TaskModel, error)
+	GetAll(
+		ctx context.Context,
+		pagination *paginate.Pagination,
+		user uint,
+	) (*paginate.Pagination, error)
 	Delete(ctx context.Context, id uint) error
-	Update(ctx context.Context, dto request.UpdateTaskRequest) error
-	Create(ctx context.Context, dto request.CreateTaskRequest) (uint, error)
+	Update(ctx context.Context, dto *request.UpdateTaskRequest) error
+	Create(ctx context.Context, dto *request.CreateTaskRequest) (uint, error)
 }
 
 type TaskService struct {
@@ -37,103 +40,94 @@ func NewTaskService(taskRepository TaskRepository, userRepository UserRepository
 	}
 }
 
-func (t *TaskService) Get(ctx context.Context, id uint, user uint) (*model.Task, error) {
+func (t *TaskService) Get(ctx context.Context, id uint) (*model.TaskModel, error) {
 	if id < 0 {
-		return &model.Task{}, ErrTaskIdIsEmpty
+		return &model.TaskModel{}, ErrTaskIdIsEmpty
 	}
 
 	taskPtr, err := t.TaskRepository.Get(ctx, id)
 	if err != nil {
-		return &model.Task{}, fmt.Errorf("%s", err.Error())
+		return &model.TaskModel{}, fmt.Errorf("%s", err.Error())
 	}
 
 	return taskPtr, nil
 }
 
-func (t *TaskService) Show(ctx context.Context, paginat *paginate.Pagination, user uint) (*paginate.Pagination, error) {
-	if paginat.Page < 0 {
-		return &paginate.Pagination{}, fmt.Errorf("Error page is less then 0. Page: %d", paginat.Page)
+func (t *TaskService) Show(
+	ctx context.Context,
+	pagination *paginate.Pagination,
+	user uint,
+) (*paginate.Pagination, error) {
+	if pagination.Page < 0 {
+		return &paginate.Pagination{}, fmt.Errorf("Error page is less then 0. Page: %d", pagination.Page)
 	}
 
-	newPaginat, err := t.TaskRepository.GetAll(ctx, paginat, user)
+	newPagination, err := t.TaskRepository.GetAll(ctx, pagination, user)
 	if err != nil {
 		return &paginate.Pagination{}, fmt.Errorf("%s", err.Error())
 	}
 
-	return newPaginat, nil
+	return newPagination, nil
 }
 
-func (t *TaskService) Create(ctx context.Context, dto request.CreateTaskRequest, user uint) (uint, error) {
-	if dto.Title == "" {
+func (t *TaskService) Create(ctx context.Context, dto *request.CreateTaskRequest) (uint, error) {
+	if dto.Name == "" {
 		return 0, ErrTaskNameIsEmpty
 	}
 
-	err := t.Validate(ctx, user, map[int16]bool{
+	/*err := t.Validate(ctx, user, map[int16]bool{
 		roles.AdminRole:       true,
 		roles.OrganizatorRole: true,
 	})
 	if err != nil {
 		return 0, err
-	}
+	}*/
 
 	id, err := t.TaskRepository.Create(ctx, dto)
 	if err != nil {
-		return 0, fmt.Errorf("%s", err.Error())
+		return 0, fmt.Errorf("%s", err)
 	}
 
 	return id, nil
 }
 
-func (t *TaskService) Update(ctx context.Context, dto request.UpdateTaskRequest, user uint) error {
+func (t *TaskService) Update(ctx context.Context, dto *request.UpdateTaskRequest) error {
 	if dto.ID < 0 {
 		return ErrTaskIdIsEmpty
 	}
 
-	err := t.Validate(ctx, user, map[int16]bool{
+	/*err := t.Validate(ctx, user, map[int16]bool{
 		roles.AdminRole:       true,
 		roles.OrganizatorRole: true,
 	})
 	if err != nil {
 		return err
-	}
+	}*/
 
-	err = t.TaskRepository.Update(ctx, dto)
+	err := t.TaskRepository.Update(ctx, dto)
 	if err != nil {
-		return fmt.Errorf("%s", err.Error())
+		return fmt.Errorf("%s", err)
 	}
 
 	return nil
 }
 
-func (t *TaskService) Delete(ctx context.Context, id uint, user uint) error {
+func (t *TaskService) Delete(ctx context.Context, id uint) error {
 	if id < 0 {
 		return ErrTaskIdIsEmpty
 	}
 
-	err := t.Validate(ctx, user, map[int16]bool{
+	/*err := t.Validate(ctx, user, map[int16]bool{
 		roles.AdminRole:       true,
 		roles.OrganizatorRole: true,
 	})
 	if err != nil {
 		return err
-	}
+	}*/
 
-	err = t.TaskRepository.Delete(ctx, id)
+	err := t.TaskRepository.Delete(ctx, id)
 	if err != nil {
-		return fmt.Errorf("%s", err.Error())
-	}
-
-	return nil
-}
-
-func (t *TaskService) Validate(ctx context.Context, user uint, validRoles map[int16]bool) (err error) {
-	auth, err := t.UserRepository.Get(ctx, user)
-	if err != nil {
-		return ErrUserIsNotValid
-	}
-
-	if !validRoles[auth.Role] {
-		return ErrUserIsNotValidRole
+		return fmt.Errorf("%s", err)
 	}
 
 	return nil

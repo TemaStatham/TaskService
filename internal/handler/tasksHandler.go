@@ -9,7 +9,7 @@ import (
 )
 
 func (h *Handler) createTask(c *gin.Context) {
-	authUser, err := auth.GetUserId(c)
+	_, err := auth.GetUserId(c)
 	if err != nil {
 		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
@@ -22,7 +22,7 @@ func (h *Handler) createTask(c *gin.Context) {
 		return
 	}
 
-	id, err := h.TaskService.Create(c.Request.Context(), input, authUser)
+	id, err := h.TaskService.Create(c.Request.Context(), &input)
 	if err != nil {
 		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
@@ -34,7 +34,7 @@ func (h *Handler) createTask(c *gin.Context) {
 }
 
 func (h *Handler) updateTask(c *gin.Context) {
-	authUser, err := auth.GetUserId(c)
+	_, err := auth.GetUserId(c)
 	if err != nil {
 		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
@@ -47,7 +47,7 @@ func (h *Handler) updateTask(c *gin.Context) {
 		return
 	}
 
-	err = h.TaskService.Update(c.Request.Context(), input, authUser)
+	err = h.TaskService.Update(c.Request.Context(), &input)
 	if err != nil {
 		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
@@ -57,7 +57,7 @@ func (h *Handler) updateTask(c *gin.Context) {
 }
 
 func (h *Handler) deleteTask(c *gin.Context) {
-	authUser, err := auth.GetUserId(c)
+	_, err := auth.GetUserId(c)
 	if err != nil {
 		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
@@ -70,7 +70,7 @@ func (h *Handler) deleteTask(c *gin.Context) {
 		return
 	}
 
-	err = h.TaskService.Delete(c.Request.Context(), input.ID, authUser)
+	err = h.TaskService.Delete(c.Request.Context(), input.ID)
 	if err != nil {
 		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
@@ -80,7 +80,7 @@ func (h *Handler) deleteTask(c *gin.Context) {
 }
 
 func (h *Handler) getTask(c *gin.Context) {
-	authUser, err := auth.GetUserId(c)
+	_, err := auth.GetUserId(c)
 	if err != nil {
 		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
@@ -93,7 +93,7 @@ func (h *Handler) getTask(c *gin.Context) {
 		return
 	}
 
-	task, err := h.TaskService.Get(c.Request.Context(), input.ID, authUser)
+	task, err := h.TaskService.Get(c.Request.Context(), input.ID)
 	if err != nil {
 		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return

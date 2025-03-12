@@ -32,18 +32,22 @@ func (c *CommentsRepository) Create(ctx context.Context, taskId, userId uint, co
 	return commentModel.ID, nil
 }
 
-func (c *CommentsRepository) Show(ctx context.Context, taskId uint, pag *paginate.Pagination) (*paginate.Pagination, error) {
-	var responses []*model.Task
+func (c *CommentsRepository) Show(
+	ctx context.Context,
+	taskId uint,
+	pagination *paginate.Pagination,
+) (*paginate.Pagination, error) {
+	var responses []*model.TaskModel
 
 	res := c.db.
 		Where("task_id = ?", taskId).
-		Scopes(paginate.Paginate(responses, pag, c.db)).
+		Scopes(paginate.Paginate(responses, pagination, c.db)).
 		Find(&responses)
 	if res.Error != nil {
 		return &paginate.Pagination{}, res.Error
 	}
 
-	pag.Rows = responses
+	pagination.Rows = responses
 
-	return pag, nil
+	return pagination, nil
 }

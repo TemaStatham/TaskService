@@ -1,33 +1,40 @@
 package request
 
 import (
+	"github.com/TemaStatham/TaskService/internal/model"
 	"github.com/TemaStatham/TaskService/pkg/paginate"
 	"time"
 )
 
 type CreateTaskRequest struct {
-	OrganizationID    int       `json:"organization_id" binding:"required"`
-	Title             string    `json:"title" binding:"required"`
-	Type              int16     `json:"type" binding:"required"`
-	Description       string    `json:"description" binding:"required"`
-	Location          string    `json:"location" binding:"required"`
-	TaskDate          time.Time `json:"task-date" binding:"required"`
-	ParticipantsCount int       `json:"participants_count" binding:"required"`
-	MaxScore          int       `json:"max_score" binding:"required"`
-	Status            *int16    `json:"status" binding:"required"`
+	Name              string    `json:"name"`
+	Description       string    `json:"description"`
+	Location          string    `json:"location"`
+	TaskDate          time.Time `json:"task_date"`
+	ParticipantsCount *int      `json:"participants_count"`
+	MaxScore          *int      `json:"max_score"`
+
+	Users        []model.UserModel       `json:"users"`
+	Categories   []model.CategoryModel   `json:"categories"`
+	Organization model.OrganizationModel `json:"organization"`
+	TaskType     model.TaskTypeModel     `json:"task_type"`
+	TaskStatus   model.TaskStatusModel   `json:"task_status"`
 }
 
 type UpdateTaskRequest struct {
-	ID                uint      `json:"id" binding:"required"`
-	OrganizationID    int       `json:"organization_id" binding:"required"`
-	Title             string    `json:"title" binding:"required"`
-	Type              int16     `json:"type" binding:"required"`
-	Description       string    `json:"description" binding:"required"`
-	Location          string    `json:"location" binding:"required"`
-	TaskDate          time.Time `json:"task-date" binding:"required"`
-	ParticipantsCount int       `json:"participants_count" binding:"required"`
-	MaxScore          int       `json:"max_score" binding:"required"`
-	Status            *int16    `json:"status" binding:"required"`
+	ID                uint      `json:"id"`
+	Name              string    `json:"name"`
+	Description       string    `json:"description"`
+	Location          string    `json:"location"`
+	TaskDate          time.Time `json:"task_date"`
+	ParticipantsCount *int      `json:"participants_count"`
+	MaxScore          *int      `json:"max_score"`
+
+	Users        []model.UserModel       `json:"users"`
+	Categories   []model.CategoryModel   `json:"categories"`
+	Organization model.OrganizationModel `json:"organization"`
+	TaskType     model.TaskTypeModel     `json:"task_type"`
+	TaskStatus   model.TaskStatusModel   `json:"task_status"`
 }
 
 type DeleteTaskRequest struct {
@@ -39,5 +46,5 @@ type GetTaskRequest struct {
 }
 
 type GetTasksRequest struct {
-	Pagination paginate.Pagination `json:"pagination" binding:"required"`
+	Pagination paginate.Pagination `json:"pagination"`
 }

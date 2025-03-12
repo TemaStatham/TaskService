@@ -9,7 +9,11 @@ import (
 
 type CommentRepository interface {
 	Create(ctx context.Context, taskId, userId uint, comment string) (uint, error)
-	Show(ctx context.Context, taskId uint, pag *paginate.Pagination) (*paginate.Pagination, error)
+	Show(
+		ctx context.Context,
+		taskId uint,
+		pagination *paginate.Pagination,
+	) (*paginate.Pagination, error)
 }
 
 type CommentService struct {
@@ -22,12 +26,16 @@ func NewCommentService(repository CommentRepository) *CommentService {
 	}
 }
 
-func (c *CommentService) Create(ctx context.Context, dto request.CreateCommentRequest, user uint) (uint, error) {
-	if dto.TaskID < 0 || dto.UserID < 0 {
+func (c *CommentService) Create(
+	ctx context.Context,
+	dto *request.CreateCommentRequest,
+	user uint,
+) (uint, error) {
+	if dto.TaskID < 0 {
 		return 0, errors.New("invalid task id")
 	}
 
-	id, err := c.CommentRepository.Create(ctx, dto.TaskID, dto.UserID, dto.Comment)
+	id, err := c.CommentRepository.Create(ctx, dto.TaskID, user, dto.Comment)
 	if err != nil {
 		return 0, err
 	}
@@ -35,15 +43,18 @@ func (c *CommentService) Create(ctx context.Context, dto request.CreateCommentRe
 	return id, nil
 }
 
-func (c *CommentService) Show(ctx context.Context, dto request.ShowCommentRequest, user uint) (*paginate.Pagination, error) {
+func (c *CommentService) Show(
+	ctx context.Context,
+	dto *request.ShowCommentRequest,
+) (*paginate.Pagination, error) {
 	if dto.TaskID < 0 {
 		return &paginate.Pagination{}, errors.New("invalid task id")
 	}
 
-	pag, err := c.CommentRepository.Show(ctx, dto.TaskID, &dto.Pag)
+	pagination, err := c.CommentRepository.Show(ctx, dto.TaskID, &dto.Pagination)
 	if err != nil {
 		return &paginate.Pagination{}, err
 	}
 
-	return pag, nil
+	return pagination, nil
 }

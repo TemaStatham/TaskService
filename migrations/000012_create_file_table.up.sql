@@ -1,0 +1,5 @@
+CREATE TABLE "file" (
+    "id" SERIAL PRIMARY KEY,
+    "src" TEXT NOT NULL,
+    "uploaded_at" TIMESTAMP DEFAULT (CURRENT_TIMESTAMP)
+);

@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/TemaStatham/TaskService/internal/config"
 	"github.com/TemaStatham/TaskService/internal/handler"
-	"github.com/TemaStatham/TaskService/internal/repository"
 	"github.com/TemaStatham/TaskService/internal/repository/postgres"
 	"github.com/TemaStatham/TaskService/internal/service"
 	"github.com/TemaStatham/TaskService/pkg/db"
@@ -41,7 +40,6 @@ func (a *App) Run(cfg *config.Config) error {
 	if err != nil {
 		return err
 	}
-	repository.Migrate(dbg)
 
 	taskRep := postgres.NewTaskPostgresRepository(dbg)
 	commRep := postgres.NewCommentsRepository(dbg)

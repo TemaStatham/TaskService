@@ -2,9 +2,9 @@ package handler
 
 import (
 	"context"
+	hub2 "github.com/TemaStatham/TaskService/internal/app/hub"
 	"github.com/TemaStatham/TaskService/internal/handler/request"
 	"github.com/TemaStatham/TaskService/internal/model"
-	"github.com/TemaStatham/TaskService/pkg/hub"
 	"github.com/TemaStatham/TaskService/pkg/middleware/auth"
 	"github.com/TemaStatham/TaskService/pkg/paginate"
 	"github.com/gin-contrib/cors"
@@ -16,22 +16,43 @@ const (
 )
 
 type TaskService interface {
-	Get(ctx context.Context, id uint, user uint) (*model.Task, error)
-	Show(ctx context.Context, paginat *paginate.Pagination, user uint) (*paginate.Pagination, error)
-	Create(ctx context.Context, dto request.CreateTaskRequest, user uint) (uint, error)
-	Update(ctx context.Context, dto request.UpdateTaskRequest, user uint) error
-	Delete(ctx context.Context, id uint, user uint) error
+	Get(ctx context.Context, id uint) (*model.TaskModel, error)
+	Update(ctx context.Context, dto *request.UpdateTaskRequest) error
+	Delete(ctx context.Context, id uint) error
+	Create(ctx context.Context, dto *request.CreateTaskRequest) (uint, error)
+	Show(
+		ctx context.Context,
+		pagination *paginate.Pagination,
+		user uint,
+	) (*paginate.Pagination, error)
 }
 
 type ResponseService interface {
-	Create(ctx context.Context, dto request.CreateResponseRequest, user uint) (uint, error)
-	Show(ctx context.Context, dto request.GetResponseRequest, user uint) (*paginate.Pagination, error)
-	Update(ctx context.Context, dto request.UpdateResponseRequest, user uint) error
+	Create(
+		ctx context.Context,
+		dto *request.CreateResponseRequest,
+		user uint,
+	) (uint, error)
+	Show(
+		ctx context.Context,
+		dto *request.GetResponseRequest,
+	) (*paginate.Pagination, error)
+	Update(
+		ctx context.Context,
+		dto *request.UpdateResponseRequest,
+	) error
 }
 
 type CommentService interface {
-	Create(ctx context.Context, dto request.CreateCommentRequest, user uint) (uint, error)
-	Show(ctx context.Context, dto request.ShowCommentRequest, user uint) (*paginate.Pagination, error)
+	Create(
+		ctx context.Context,
+		dto *request.CreateCommentRequest,
+		user uint,
+	) (uint, error)
+	Show(
+		ctx context.Context,
+		dto *request.ShowCommentRequest,
+	) (*paginate.Pagination, error)
 }
 
 type Handler struct {
@@ -40,7 +61,11 @@ type Handler struct {
 	CommentService
 }
 
-func NewTaskHandler(taskService TaskService, responseService ResponseService, commentService CommentService) *Handler {
+func NewTaskHandler(
+	taskService TaskService,
+	responseService ResponseService,
+	commentService CommentService,
+) *Handler {
 	return &Handler{
 		taskService,
 		responseService,
@@ -70,12 +95,12 @@ func (h *Handler) Init(jwtSecret string) *gin.Engine {
 		responses.PUT("/:id", h.updateResponse)
 	}
 
-	wsHub := hub.NewHub()
+	wsHub := hub2.NewHub()
 	go wsHub.Run()
 
 	router.GET("/ws/:roomId", func(c *gin.Context) {
 		roomId := c.Param("roomId")
-		hub.ServeWS(c, roomId, wsHub)
+		hub2.ServeWS(c, roomId, wsHub)
 	})
 
 	return router

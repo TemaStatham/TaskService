@@ -3,12 +3,11 @@ package request
 import "github.com/TemaStatham/TaskService/pkg/paginate"
 
 type CreateCommentRequest struct {
-	TaskID  uint   `gorm:"not null;index"`
-	UserID  uint   `gorm:"not null;index"`
-	Comment string `gorm:"type:text;not null"`
+	TaskID  uint
+	Comment string
 }
 
 type ShowCommentRequest struct {
-	TaskID uint                `gorm:"not null;index"`
-	Pag    paginate.Pagination `gorm:"not null;index"`
+	TaskID     uint
+	Pagination paginate.Pagination
 }

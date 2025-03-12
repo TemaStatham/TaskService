@@ -26,7 +26,7 @@ func (consumerGroupHandler) Setup(_ sarama.ConsumerGroupSession) error   { retur
 func (consumerGroupHandler) Cleanup(_ sarama.ConsumerGroupSession) error { return nil }
 func (h consumerGroupHandler) ConsumeClaim(sess sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
 	for msg := range claim.Messages() {
-		var user model.User
+		var user model.UserModel
 		err := json.Unmarshal([]byte(msg.Value), &user)
 		if err != nil {
 			fmt.Println("Ошибка парсинга JSON: %v", err)
