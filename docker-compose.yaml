@@ -1,35 +1,41 @@
-version: '3.8'
-
 services:
-  zookeeper:
-    image: docker.io/bitnami/zookeeper:3.8
-    ports:
-      - "2181:2181"
-    networks:
-      - dapomogu
+  grpc-proto:
+    build:
+      context: .
+      dockerfile: ./functions/Dockerfile
+    image: profileserviceproto-go:v1.0
     volumes:
-      - "zookeeper-volume:/bitnami"
-    environment:
-      - ALLOW_ANONYMOUS_LOGIN=yes
+      - ./functions:/opt/functions
+    command: >
+      sh -c "protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative functions.proto"
+    networks:
+      - grpc
 
-  kafka:
-    image: docker.io/bitnami/kafka:3.3
-    environment:
-      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
-      - KAFKA_CFG_LISTENERS=CLIENT://0.0.0.0:9092
-      - KAFKA_CFG_ADVERTISED_LISTENERS=CLIENT://kafka:9092
-      - KAFKA_BROKER_ID=1
-      - ALLOW_PLAINTEXT_LISTENER=yes
-      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
-      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=CLIENT
+  grpc-server:
+    build:
+      context: .
+      dockerfile: ./server/Dockerfile
+    image: profileservice-go:v1.0
     ports:
-      - "9092:9092"
-    volumes:
-      - "kafka-volume:/bitnami"
-    depends_on:
-      - zookeeper
+      - "50501:50501"
     networks:
-      - dapomogu
+      - grpc
+    depends_on:
+      - grpc-proto
+
+  grpc-client:
+    build:
+      context: .
+      dockerfile: ./client/Dockerfile
+    image: taskservice-go:v2.0
+    networks:
+      - grpc
+    depends_on:
+      - grpc-server
+    environment:
+      - SERVER_HOST=grpc-server:50501
+    ports:
+      - "8080:8080"
 
   dapomogu_task_postgres:
     container_name: dapomogu_task_postgres
@@ -41,34 +47,30 @@ services:
       PGDATA: /data/postgres
     volumes:
       - postgres:/data/postgres
-      - ./db-init/:/docker-entrypoint-initdb.d/
+      - ./client/db-init/:/docker-entrypoint-initdb.d/
     ports:
       - "5435:5432"
     networks:
-      - dapomogu
+      - grpc
     restart: unless-stopped
 
-  dapomogu_task_service:
-    container_name: dapomogu_task_service
-    build:
-      context: .
+  migrate:
+    image: migrate/migrate
+    volumes:
+      - ./migrations:/migrations
+    networks:
+      - grpc
     depends_on:
       - dapomogu_task_postgres
-      - kafka
-    ports:
-      - "8080:8080"
-    networks:
-      - dapomogu
-    restart: unless-stopped
-
+    command: [
+      "-path", "./migrations",
+      "-database", "postgres://postgres:dapomogu_password@dapomogu_task_postgres:5432/dapomogu_task_postgres_db?sslmode=disable",
+      "up"
+    ]
 
 networks:
-  dapomogu:
+  grpc:
     driver: bridge
-
 
 volumes:
   postgres:
-  pgadmin:
-  kafka-volume:
-  zookeeper-volume:

@@ -3,3 +3,5 @@ CREATE TABLE "task_category" (
     "task_id" INTEGER NOT NULL,
     "category_id" INTEGER NOT NULL
 );
+
+
