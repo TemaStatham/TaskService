@@ -14,14 +14,13 @@ const (
 
 type Client struct {
 	RoomID uint // roomid => taskid
-	UserID uint // userid => userid
 	Conn   *websocket.Conn
 	send   chan Message
 	hub    *Hub
 }
 
-func NewClient(userID uint, taskID uint, conn *websocket.Conn, hub *Hub) *Client {
-	return &Client{UserID: userID, RoomID: taskID, Conn: conn, send: make(chan Message, 256), hub: hub}
+func NewClient(taskID uint, conn *websocket.Conn, hub *Hub) *Client {
+	return &Client{RoomID: taskID, Conn: conn, send: make(chan Message, 256), hub: hub}
 }
 
 func (c *Client) Read() {

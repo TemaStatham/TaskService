@@ -6,30 +6,43 @@
     <title>WebSocket Test</title>
 </head>
 <body>
+<h1>WebSocket Test</h1>
+<button onclick="sendMessage()">Отправить сообщение</button>
+
 <script>
     const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJleHAiOjE3NDIyMTUzOTZ9.0LdTgAuuFwsY6Vqt0C9hDOI12BECmUaph-z8fPTKBrE";
-    const roomId = 1;
-    const userId = 1;
-
-    const socket = new WebSocket(`ws://localhost:8080/ws?roomID=1`);
+    const socket = new WebSocket(`ws://localhost:8080/ws?roomID=7`);
 
     socket.onopen = () => {
-        console.log("Соединение установлено");
-        socket.send("Привет, сервер!");
+        console.log("✅ Соединение установлено");
     };
 
     socket.onmessage = (event) => {
-        console.log("Ответ от сервера:", event.data);
+        console.log("📩 Ответ от сервера:", event.data);
     };
 
     socket.onerror = (error) => {
-        console.log("Ошибка:", error);
+        console.log("❌ Ошибка:", error);
     };
 
     socket.onclose = () => {
-        console.log("Соединение закрыто");
+        console.log("🔴 Соединение закрыто");
     };
 
+    function sendMessage() {
+        if (socket.readyState === WebSocket.OPEN) {
+            const message = {
+                type: "Create",
+                task_id: 7,
+                data: "asd",
+                user_id: 1
+            };  
+            socket.send(JSON.stringify(message));
+            console.log("📤 Сообщение отправлено:", message);
+        } else {
+            console.log("⚠️ WebSocket не подключен");
+        }
+    }
 </script>
 </body>
 </html>

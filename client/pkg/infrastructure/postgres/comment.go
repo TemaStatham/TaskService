@@ -25,7 +25,7 @@ func (c *CommentsRepository) Create(ctx context.Context, comment data.CreateComm
 		Comment: comment.Comment,
 	}
 
-	res := c.db.WithContext(ctx).Create(comment)
+	res := c.db.WithContext(ctx).Create(&commentModel)
 	if res.Error != nil {
 		return 0, res.Error
 	}

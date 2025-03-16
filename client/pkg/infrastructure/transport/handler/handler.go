@@ -72,7 +72,7 @@ func ServeWS(ctx *gin.Context, roomID uint, h *hub2.Hub) {
 		fmt.Println("Ошибка WebSocket:", err)
 		return
 	}
-	client := hub2.NewClient(1, roomID, ws, h)
+	client := hub2.NewClient(roomID, ws, h)
 	h.RegisterClient(client)
 
 	go client.Write()

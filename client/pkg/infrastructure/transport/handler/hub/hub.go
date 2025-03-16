@@ -65,7 +65,7 @@ func (h *Hub) RegisterClient(client *Client) {
 	h.clients[client.RoomID][client] = true
 	fmt.Println("Клиент подключился:", client.RoomID)
 
-	comments, err := h.commentQuery.Show(
+	/*comments, err := h.commentQuery.Show(
 		context.Background(),
 		data.ShowComment{TaskID: client.RoomID, Pagination: paginate.Pagination{}},
 	)
@@ -75,7 +75,7 @@ func (h *Hub) RegisterClient(client *Client) {
 			TaskID: client.RoomID,
 			Data:   serializeComments(comments),
 		}
-	}
+	}*/
 }
 
 func (h *Hub) RemoveClient(client *Client) {
@@ -94,7 +94,7 @@ func (h *Hub) HandleMessage(message Message) {
 	defer h.mu.Unlock()
 
 	switch message.Type {
-	case "Создать":
+	case "Create":
 		{
 			_, err := h.commentService.Create(
 				context.Background(),
@@ -105,8 +105,23 @@ func (h *Hub) HandleMessage(message Message) {
 				fmt.Println("Ошибка сохранения комментария:", err)
 				return
 			}
+
+			message := Message{
+				Type:   "message",
+				TaskID: message.TaskID,
+				Data:   "its ok",
+			}
+
+			for client := range h.clients[message.TaskID] {
+				select {
+				case client.send <- message:
+				default:
+					close(client.send)
+					delete(h.clients[message.TaskID], client)
+				}
+			}
 		}
-	case "Получить":
+	case "Get":
 		{
 			var pagination paginate.Pagination
 			err := json.Unmarshal([]byte(message.Data), &pagination)
