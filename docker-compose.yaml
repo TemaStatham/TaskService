@@ -1,41 +1,76 @@
-version: '3.8'
-
 services:
+  grpc-proto:
+    build:
+      context: .
+      dockerfile: ./functions/Dockerfile
+    image: profileserviceproto-go:v1.0
+    volumes:
+      - ./functions:/opt/functions
+    command: >
+      sh -c "protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative functions.proto"
+    networks:
+      - grpc
+
+  grpc-server:
+    build:
+      context: .
+      dockerfile: ./server/Dockerfile
+    image: profileservice-go:v1.0
+    ports:
+      - "50501:50501"
+    networks:
+      - grpc
+    depends_on:
+      - grpc-proto
+
+  grpc-client:
+    build:
+      context: .
+      dockerfile: ./client/Dockerfile
+    image: taskservice-go:v2.0
+    networks:
+      - grpc
+    depends_on:
+      - grpc-server
+    environment:
+      - SERVER_HOST=grpc-server:50501
+    ports:
+      - "8080:8080"
+
   dapomogu_task_postgres:
     container_name: dapomogu_task_postgres
     image: postgres:latest
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dapomogu_password}
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: dapomogu_password
+      POSTGRES_DB: dapomogu_task_postgres_db
       PGDATA: /data/postgres
     volumes:
       - postgres:/data/postgres
+      - ./client/db-init/:/docker-entrypoint-initdb.d/
     ports:
-      - "5432:5432"
+      - "5435:5432"
     networks:
-      - postgres
+      - grpc
     restart: unless-stopped
 
-  dapomogu_task_service:
-    container_name: dapomogu_task_service
-    build:
-      context: .
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dapomogu_password}
-      DB_NAME: ${DB_NAME:-dapomogu_task_db}
+  migrate:
+    image: migrate/migrate
+    volumes:
+      - ./migrations:/migrations
+    networks:
+      - grpc
     depends_on:
       - dapomogu_task_postgres
-    ports:
-      - "8080:8080"
-    networks:
-      - postgres
-    restart: unless-stopped
+    command: [
+      "-path", "./migrations",
+      "-database", "postgres://postgres:dapomogu_password@dapomogu_task_postgres:5432/dapomogu_task_postgres_db?sslmode=disable",
+      "up"
+    ]
 
 networks:
-  postgres:
+  grpc:
     driver: bridge
 
 volumes:
   postgres:
-  pgadmin:

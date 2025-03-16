@@ -1,0 +1,19 @@
+server:
+  port: "8080"
+  host: "localhost"
+db:
+  port: "5432"
+  host: "dapomogu_task_postgres"
+  username: "postgres"
+  dbname: "dapomogu_task_postgres_db"
+  ssl_mode: "disable"
+  password: "dapomogu_password"
+kafka:
+  port: "9092"
+  host: "kafka"
+  users_topic: "users_topic"
+  groups_topic: "groups_topic"
+  group_id: "users_topic"
+address:
+  "grpc-server:50501"
+jwt_secret: "secretJWT"
