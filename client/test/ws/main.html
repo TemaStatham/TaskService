@@ -7,7 +7,11 @@
 </head>
 <body>
 <script>
-    const socket = new WebSocket("ws://localhost:8080/ws");
+    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJleHAiOjE3NDIyMTUzOTZ9.0LdTgAuuFwsY6Vqt0C9hDOI12BECmUaph-z8fPTKBrE";
+    const roomId = 1;
+    const userId = 1;
+
+    const socket = new WebSocket(`ws://localhost:8080/ws?roomID=1`);
 
     socket.onopen = () => {
         console.log("Соединение установлено");
@@ -25,6 +29,7 @@
     socket.onclose = () => {
         console.log("Соединение закрыто");
     };
+
 </script>
 </body>
 </html>

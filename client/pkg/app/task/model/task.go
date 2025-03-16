@@ -97,6 +97,7 @@ type TaskUserReadRepositoryInterface interface {
 }
 
 type TaskUserRepositoryInterface interface {
+	TaskUserReadRepositoryInterface
 	Add(ctx context.Context, userID, taskID uint, isCoordinator bool) error
 	Delete(ctx context.Context, userID, taskID uint) error
 }

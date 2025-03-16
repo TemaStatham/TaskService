@@ -66,13 +66,13 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-func ServeWS(ctx *gin.Context, roomID, userID uint, h *hub2.Hub) {
+func ServeWS(ctx *gin.Context, roomID uint, h *hub2.Hub) {
 	ws, err := upgrader.Upgrade(ctx.Writer, ctx.Request, nil)
 	if err != nil {
 		fmt.Println("Ошибка WebSocket:", err)
 		return
 	}
-	client := hub2.NewClient(roomID, userID, ws, h)
+	client := hub2.NewClient(1, roomID, ws, h)
 	h.RegisterClient(client)
 
 	go client.Write()
@@ -84,62 +84,63 @@ func (h *Handler) Init(jwtSecret string) *gin.Engine {
 
 	router.Use(cors.Default())
 	//todo: переписать парсинг токена на грпс запрос
-	router.Use(auth.UserIdentity(jwtSecret))
+	//
 
-	tasksUsers := router.Group("/tasks-users")
+	httphands := router.Group("/api")
 	{
-		tasksUsers.GET("/:id", h.getTasksUsers)
-		tasksUsers.POST("/add/:id", h.addTasksUsers)
-		tasksUsers.DELETE("/delete/:id", h.deleteTasksUsers)
-	}
+		httphands.Use(auth.UserIdentity(jwtSecret))
+		tasksUsers := httphands.Group("/tasks-users")
+		{
+			tasksUsers.GET("/:id", h.getTasksUsers)
+			tasksUsers.POST("/add/:id", h.addTasksUsers)
+			tasksUsers.DELETE("/delete/:id", h.deleteTasksUsers)
+		}
 
-	tasks := router.Group("/tasks")
-	{
-		tasks.GET("/", h.getTasks)
-		tasks.GET("/:id", h.getTask)
-		tasks.POST("/", h.createTask)
-		tasks.PUT("/:id", h.updateTask)
-		tasks.DELETE("/:id", h.deleteTask)
-	}
+		tasks := httphands.Group("/tasks")
+		{
+			tasks.GET("/", h.getTasks)
+			tasks.GET("/:id", h.getTask)
+			tasks.POST("/", h.createTask)
+			tasks.PUT("/:id", h.updateTask)
+			tasks.DELETE("/:id", h.deleteTask)
+		}
 
-	responses := router.Group("/responses")
-	{
-		responses.GET("/", h.getResponses)
-		responses.POST("/", h.createResponse)
-		responses.PUT("/:id", h.updateResponse)
-	}
+		responses := httphands.Group("/responses")
+		{
+			responses.GET("/", h.getResponses)
+			responses.POST("/", h.createResponse)
+			responses.PUT("/:id", h.updateResponse)
+		}
 
-	comments := router.Group("/comments")
-	{
-		comments.GET("", h.getComments)
-		comments.POST("", h.addComments)
-	}
+		comments := httphands.Group("/comments")
+		{
+			comments.GET("", h.getComments)
+			comments.POST("", h.addComments)
+		}
 
-	approves := router.Group("/approves")
-	{
-		approves.POST("", h.addApproves)
+		approves := httphands.Group("/approves")
+		{
+			approves.POST("", h.addApproves)
+		}
 	}
 
 	wsHub := hub2.NewHub(h.commentService, h.commentQuery)
 	go wsHub.Run()
 
-	router.GET("/ws/:roomId/:userId", func(c *gin.Context) {
-		roomIdStr := c.Param("roomId")
-		userIdStr := c.Param("userId")
+	router.GET("/ws", func(c *gin.Context) {
+		roomIDParam := c.Query("roomID")
 
-		roomId, err := strconv.ParseUint(roomIdStr, 10, 32)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid roomId"})
+		if roomIDParam == "" {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "missing token"})
 			return
 		}
 
-		userId, err := strconv.ParseUint(userIdStr, 10, 32)
+		roomID, err := strconv.ParseUint(roomIDParam, 10, 64)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid userId"})
-			return
+			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		}
 
-		ServeWS(c, uint(roomId), uint(userId), wsHub)
+		ServeWS(c, uint(roomID), wsHub)
 	})
 
 	return router
