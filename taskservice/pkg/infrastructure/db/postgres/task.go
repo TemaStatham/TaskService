@@ -56,6 +56,7 @@ func (t *TaskRepository) Create(ctx context.Context, task *data.CreateTask) (uin
 		return 0, fmt.Errorf("%w: %v", ErrCreateTask, res.Error)
 	}
 
+	//todo:  вынести в app
 	for _, coordinator := range task.Coordinators {
 		if err := t.taskuserrepo.Add(ctx, coordinator, taskModel.ID, true); err != nil {
 			fmt.Printf("%s: %d\n", ErrAddCoordinator, coordinator)
@@ -127,13 +128,49 @@ func (t *TaskRepository) GetAll(
 		return nil, fmt.Errorf("Ошибка при подсчете задач: %v", err)
 	}
 
-	// todo: вынести в сервис
+	// todo: вынести в сервис с пагинацией
 	limit := dto.Limit
 	if limit <= paginate.MinLimit {
 		limit = paginate.DefaultLimit
 	}
 
 	page := dto.Page
+	if page <= paginate.MinPage {
+		page = paginate.DefaultPage
+	}
+
+	offset := (page - 1) * limit
+	query = query.Limit(limit).Offset(offset)
+
+	if err := query.Find(&tasks).Error; err != nil {
+		return nil, fmt.Errorf("Ошибка при получении списка задач: %v", err)
+	}
+
+	return &paginate.Pagination{
+		TotalPages: total,
+		Page:       page,
+		Limit:      limit,
+		Rows:       tasks,
+	}, nil
+}
+
+func (t *TaskRepository) GetByOrganization(ctx context.Context, page int, limit int, organizationID uint) (*paginate.Pagination, error) {
+	var tasks []*model.TaskModel
+	query := t.db.WithContext(ctx).Where("organization_id = ?", organizationID)
+	if err := query.Find(&tasks).Error; err != nil {
+		return nil, err
+	}
+
+	var total int64
+	if err := query.Model(&model.TaskModel{}).Count(&total).Error; err != nil {
+		return nil, fmt.Errorf("Ошибка при подсчете задач: %v", err)
+	}
+
+	// todo: вынести в сервис с пагинацией
+	if limit <= paginate.MinLimit {
+		limit = paginate.DefaultLimit
+	}
+
 	if page <= paginate.MinPage {
 		page = paginate.DefaultPage
 	}

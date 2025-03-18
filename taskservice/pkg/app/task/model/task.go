@@ -53,7 +53,7 @@ type TaskReadRepositoryInterface interface {
 		user uint,
 		organizations []model.Organization,
 	) (*paginate.Pagination, error)
-	GetByOrganization(ctx context.Context, organizationID uint) (*paginate.Pagination, error)
+	GetByOrganization(ctx context.Context, page int, limit int, organizationID uint) (*paginate.Pagination, error)
 }
 
 type TaskRepositoryInterface interface {

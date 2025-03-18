@@ -29,7 +29,8 @@ type ResponseRepositoryReadInterface interface {
 	Show(
 		ctx context.Context,
 		taskId uint,
-		pagination *paginate.Pagination,
+		page int,
+		limit int,
 	) (*paginate.Pagination, error)
 }
 

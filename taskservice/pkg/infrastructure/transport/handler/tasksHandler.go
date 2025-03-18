@@ -118,7 +118,7 @@ func (h *Handler) getTasks(c *gin.Context) {
 		return
 	}
 
-	pag, err := h.taskQuery.Show(c.Request.Context(), &input.Pagination, authUser)
+	pag, err := h.taskQuery.Show(c.Request.Context(), input, authUser)
 	if err != nil {
 		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return

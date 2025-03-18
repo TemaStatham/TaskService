@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/TemaStatham/TaskService/taskservice/pkg/app/comment/data"
 	"github.com/TemaStatham/TaskService/taskservice/pkg/app/comment/model"
-	"github.com/TemaStatham/TaskService/taskservice/pkg/app/paginate"
 	paginate2 "github.com/TemaStatham/TaskService/taskservice/pkg/infrastructure/lib/paginate"
 	"gorm.io/gorm"
 )
@@ -34,23 +33,20 @@ func (c *CommentsRepository) Create(ctx context.Context, comment data.CreateComm
 	return commentModel.ID, nil
 }
 
-func (c *CommentsRepository) Show(
-	ctx context.Context,
-	taskId uint,
-	pagination *paginate2.Pagination,
-) (*paginate2.Pagination, error) {
+func (c *CommentsRepository) Show(ctx context.Context, taskId uint, page int, limit int) (*paginate2.Pagination, error) {
 	var responses []*model.CommentModel
+	query := c.db.WithContext(ctx).Where("task_id = ?", taskId)
 
-	res := c.db.
-		WithContext(ctx).
-		Where("task_id = ?", taskId).
-		Scopes(paginate.Paginate(responses, pagination, c.db)).
-		Find(&responses)
-	if res.Error != nil {
-		return &paginate2.Pagination{}, res.Error
+	var total int64
+	if err := query.Model(&model.CommentModel{}).Count(&total).Error; err != nil {
+		return nil, err
 	}
 
-	pagination.Rows = responses
+	offset := (page - 1) * limit
+	if err := query.Offset(offset).Limit(limit).Find(&responses).Error; err != nil {
+		return nil, err
+	}
 
-	return pagination, nil
+	pagination := paginate2.Pagination{limit, page, total, responses}
+	return &pagination, nil
 }

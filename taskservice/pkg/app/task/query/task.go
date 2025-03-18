@@ -66,7 +66,7 @@ func (t *TaskQuery) Show(
 		if len(organizations) == 0 {
 			return &paginate.Pagination{}, errors.New("user is admin but organization not found")
 		}
-		return t.readRepository.GetByOrganization(ctx, organizations[0].ID)
+		return t.readRepository.GetByOrganization(ctx, dto.Page, dto.Limit, organizations[0].ID)
 	}
 
 	var orgIDs []uint

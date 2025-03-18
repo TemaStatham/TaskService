@@ -47,7 +47,8 @@ func (h *Handler) getResponses(c *gin.Context) {
 		return
 	}
 
-	pag, err := h.responseQuery.Show(c.Request.Context(), input.TaskId, input.Pagination)
+	// todo переписать под дто, чтобы не было необходимости вносить изменений каждый раз в этой строке
+	pag, err := h.responseQuery.Show(c.Request.Context(), input.TaskId, input.Page, input.Limit)
 	if err != nil {
 		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return

@@ -11,7 +11,8 @@ type ResponseQueryInterface interface {
 	Show(
 		ctx context.Context,
 		taskId uint,
-		pagination *paginate.Pagination,
+		page int,
+		limit int,
 	) (*paginate.Pagination, error)
 }
 
@@ -28,15 +29,12 @@ func NewResponseQuery(responseRepository model.ResponseRepositoryReadInterface) 
 func (r *ResponseQuery) Show(
 	ctx context.Context,
 	taskId uint,
-	pagination *paginate.Pagination,
+	page int,
+	limit int,
 ) (*paginate.Pagination, error) {
 	if taskId < 0 {
 		return nil, errors.New("invalid task id")
 	}
 
-	if pagination == nil {
-		return nil, errors.New("pagination is required")
-	}
-
-	return r.responseRepository.Show(ctx, taskId, pagination)
+	return r.responseRepository.Show(ctx, taskId, page, limit)
 }

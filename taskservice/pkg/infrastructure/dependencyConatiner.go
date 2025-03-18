@@ -83,14 +83,14 @@ func NewContainer(config config.Config) *Container {
 	}
 
 	organizationQuery := organizationquery.NewOrganization(grpcClient)
-
-	taskRepository := postgres2.NewTaskPostgresRepository(db)
-	taskQuery := taskquery.NewTaskQuery(taskRepository, organizationQuery)
-	taskService := taskservice.NewTaskService(taskRepository, organizationQuery)
-
 	userQuery := userquery.NewUserQuery(grpcClient)
 
 	taskUserRepository := postgres2.NewTaskUserPostgresRepository(db)
+	taskCategoryRepository := postgres2.NewTaskCategoryRepository(db)
+	taskRepository := postgres2.NewTaskPostgresRepository(db, taskUserRepository, taskCategoryRepository)
+	taskQuery := taskquery.NewTaskQuery(taskRepository, organizationQuery, userQuery)
+	taskService := taskservice.NewTaskService(taskRepository, organizationQuery)
+
 	taskUserQuery := taskquery.NewTaskUserQuery(taskUserRepository)
 	taskUserService := taskservice.NewTaskUserService(taskUserRepository)
 

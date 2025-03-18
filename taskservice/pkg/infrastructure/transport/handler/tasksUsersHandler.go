@@ -22,7 +22,7 @@ func (h *Handler) getTasksUsers(c *gin.Context) {
 		return
 	}
 
-	pag, err := h.takuserQuery.GetUsers(c.Request.Context(), input.TaskID, &input.Pagination, input.IsCoordinators)
+	pag, err := h.takuserQuery.GetUsers(c.Request.Context(), input.TaskID, input.Page, input.Limit, input.IsCoordinators)
 	if err != nil {
 		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return

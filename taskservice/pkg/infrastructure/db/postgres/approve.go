@@ -23,10 +23,21 @@ func (a *ApproveRepository) Create(ctx context.Context, approve data.CreateAppro
 		UserID:   approve.UserID,
 		StatusID: approve.StatusID,
 		Score:    approve.Score,
-		Approved: approve.Approved,
+		Approved: &approve.Approved,
 	}
 
+	// todo: всю логику из репозиторного слоя вынести в app
 	res := a.db.WithContext(ctx).Create(&approveModel)
+	if res.Error != nil {
+		return res.Error
+	}
+
+	fileModel := model.File{
+		ID:  approveModel.ID,
+		SRC: approve.File,
+	} // todo: создать файл
+
+	res = a.db.WithContext(ctx).Create(&fileModel)
 	if res.Error != nil {
 		return res.Error
 	}
