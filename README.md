@@ -1,3 +1,10 @@
+cd proto/notifications
+docker build -t notificationservice-go:v1.0
+docker tag notificationservice-go:v1.0 temastatham/notificationservice-go:v1.0
+docker run -it --rm -v $PWD:/opt/proto/notification -w /opt/proto/notification temastatham/notificationservice-go:v1.0
+protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative notificationservice.proto
+
+
 cd functions
 docker build -t profileserviceproto-go:v2.0 .
 docker tag profileserviceproto-go:v2.0 temastatham/profileserviceproto-go:v2.0

@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+option go_package = "github.com/TemaStatham/TaskService/proto/profile";
+package functions;
+
+service ProfileService {
+    rpc GetUser(UserRequest) returns (UserResponse) {}
+    rpc GetOrganization(OrganizationRequest) returns (OrganizationResponse) {}
+    // Все организации, в которых состоит пользователь
+    rpc GetOrganizationsByUserID(OrganizationUserRequest) returns (OrganizationUserListResponse) {}
+}
+
+message UserRequest {
+    uint64 id = 1;
+}
+
+message UserResponse {
+    string name = 1;
+    string surname = 2;
+    bool is_admin = 3;
+}
+
+message OrganizationRequest {
+    uint64 id = 1;
+}
+
+message OrganizationResponse {
+    string email = 1;
+    uint64 status_id = 2;
+}
+
+message OrganizationUserRequest {
+    uint64 id = 1;
+}
+
+message OrganizationUserResponse {
+    uint64 id = 1;
+    bool isOwner = 2;
+}
+
+message OrganizationUserListResponse {
+    repeated OrganizationUserResponse organizations = 1;
+}
