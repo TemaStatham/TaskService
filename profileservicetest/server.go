@@ -66,20 +66,23 @@ func (s *server) GetOrganizationsByUserID(ctx context.Context, req *pb.Organizat
 	}, nil
 }
 
+func (s *server) GetUsersByIDS(ctx context.Context, request *pb.GetUsersByIDsRequest) (*pb.GetUsersByIDsResponse, error) {
+	return &pb.GetUsersByIDsResponse{Users: []*pb.User{
+		&pb.User{Id: 1, Surname: "John"},
+	}}, nil
+}
+
 func main() {
-	// Настройка порта
 	port, exists := os.LookupEnv("PORT")
 	if !exists {
 		port = "50501"
 	}
 
-	// Настройка TCP сервера
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", port))
 	if err != nil {
 		log.Fatalf("Error in Listen: %v", err)
 	}
 
-	// Настройка gRPC сервера
 	s := grpc.NewServer()
 	pb.RegisterProfileServiceServer(s, &server{})
 	log.Printf("listening at: %v", lis.Addr())

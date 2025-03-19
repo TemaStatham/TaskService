@@ -9,8 +9,10 @@ import (
 
 type UserQueryInterface interface {
 	GetUser(ctx context.Context, userID uint64) (model.User, error)
+	GetUsersByIDS(ctx context.Context, userIDS []uint64) ([]model.User, error)
 }
 
+// Grpcs методы
 type ClientUserInterface interface {
 	GetUser(ctx context.Context, userID uint64) (model.User, error)
 }
@@ -19,7 +21,12 @@ type UserQuery struct {
 	client ClientUserInterface
 }
 
-func NewUserQuery(client ClientUserInterface) *UserQuery {
+func (u *UserQuery) GetUsersByIDS(ctx context.Context, userIDS []uint64) ([]model.User, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func NewUserQuery(client ClientUserInterface) UserQueryInterface {
 	return &UserQuery{
 		client: client,
 	}

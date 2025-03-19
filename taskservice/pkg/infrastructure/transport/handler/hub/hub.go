@@ -158,7 +158,7 @@ func (h *Hub) HandleMessage(message Message) {
 				message := Message{
 					Type:   "message",
 					TaskID: message.TaskID,
-					Data:   "its ok",
+					Data:   "Error",
 				}
 
 				for client := range h.clients[message.TaskID] {

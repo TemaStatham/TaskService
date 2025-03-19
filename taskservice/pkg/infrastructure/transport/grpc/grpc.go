@@ -86,3 +86,19 @@ func (c *Client) GetOrganizationsByUserID(ctx context.Context, userID uint64) ([
 
 	return orgs, nil
 }
+
+func (c *Client) GetUsersByIDS(ctx context.Context, users []uint) ([]User.User, error) {
+	res, err := c.Client.GetUsersByIDS(ctx, &pb.GetUsersByIDsRequest{})
+	if err != nil {
+		return []User.User{}, err
+	}
+
+	usersres := []User.User{}
+	for _, user := range res.Users {
+		usersres = append(usersres, User.User{
+			ID: uint(user.Id),
+		})
+	}
+
+	return usersres, nil
+}

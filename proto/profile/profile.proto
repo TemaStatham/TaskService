@@ -8,6 +8,23 @@ service ProfileService {
     rpc GetOrganization(OrganizationRequest) returns (OrganizationResponse) {}
     // Все организации, в которых состоит пользователь
     rpc GetOrganizationsByUserID(OrganizationUserRequest) returns (OrganizationUserListResponse) {}
+    rpc GetUsersByIDS(GetUsersByIDsRequest) returns (GetUsersByIDsResponse) {}
+}
+
+message User {
+    uint64 id = 1;
+    string surname = 2;
+    string name = 3;
+    bool is_admin = 4;
+    string file = 5;
+}
+
+message GetUsersByIDsRequest {
+    repeated uint64 user_ids = 1;
+}
+
+message GetUsersByIDsResponse {
+    repeated User users = 1;
 }
 
 message UserRequest {

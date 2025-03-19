@@ -22,6 +22,7 @@ const (
 	ProfileService_GetUser_FullMethodName                  = "/functions.ProfileService/GetUser"
 	ProfileService_GetOrganization_FullMethodName          = "/functions.ProfileService/GetOrganization"
 	ProfileService_GetOrganizationsByUserID_FullMethodName = "/functions.ProfileService/GetOrganizationsByUserID"
+	ProfileService_GetUsersByIDS_FullMethodName            = "/functions.ProfileService/GetUsersByIDS"
 )
 
 // ProfileServiceClient is the client API for ProfileService service.
@@ -32,6 +33,7 @@ type ProfileServiceClient interface {
 	GetOrganization(ctx context.Context, in *OrganizationRequest, opts ...grpc.CallOption) (*OrganizationResponse, error)
 	// Все организации, в которых состоит пользователь
 	GetOrganizationsByUserID(ctx context.Context, in *OrganizationUserRequest, opts ...grpc.CallOption) (*OrganizationUserListResponse, error)
+	GetUsersByIDS(ctx context.Context, in *GetUsersByIDsRequest, opts ...grpc.CallOption) (*GetUsersByIDsResponse, error)
 }
 
 type profileServiceClient struct {
@@ -72,6 +74,16 @@ func (c *profileServiceClient) GetOrganizationsByUserID(ctx context.Context, in 
 	return out, nil
 }
 
+func (c *profileServiceClient) GetUsersByIDS(ctx context.Context, in *GetUsersByIDsRequest, opts ...grpc.CallOption) (*GetUsersByIDsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetUsersByIDsResponse)
+	err := c.cc.Invoke(ctx, ProfileService_GetUsersByIDS_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ProfileServiceServer is the server API for ProfileService service.
 // All implementations must embed UnimplementedProfileServiceServer
 // for forward compatibility.
@@ -80,6 +92,7 @@ type ProfileServiceServer interface {
 	GetOrganization(context.Context, *OrganizationRequest) (*OrganizationResponse, error)
 	// Все организации, в которых состоит пользователь
 	GetOrganizationsByUserID(context.Context, *OrganizationUserRequest) (*OrganizationUserListResponse, error)
+	GetUsersByIDS(context.Context, *GetUsersByIDsRequest) (*GetUsersByIDsResponse, error)
 	mustEmbedUnimplementedProfileServiceServer()
 }
 
@@ -98,6 +111,9 @@ func (UnimplementedProfileServiceServer) GetOrganization(context.Context, *Organ
 }
 func (UnimplementedProfileServiceServer) GetOrganizationsByUserID(context.Context, *OrganizationUserRequest) (*OrganizationUserListResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetOrganizationsByUserID not implemented")
+}
+func (UnimplementedProfileServiceServer) GetUsersByIDS(context.Context, *GetUsersByIDsRequest) (*GetUsersByIDsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUsersByIDS not implemented")
 }
 func (UnimplementedProfileServiceServer) mustEmbedUnimplementedProfileServiceServer() {}
 func (UnimplementedProfileServiceServer) testEmbeddedByValue()                        {}
@@ -174,6 +190,24 @@ func _ProfileService_GetOrganizationsByUserID_Handler(srv interface{}, ctx conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ProfileService_GetUsersByIDS_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetUsersByIDsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ProfileServiceServer).GetUsersByIDS(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ProfileService_GetUsersByIDS_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ProfileServiceServer).GetUsersByIDS(ctx, req.(*GetUsersByIDsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ProfileService_ServiceDesc is the grpc.ServiceDesc for ProfileService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -192,6 +226,10 @@ var ProfileService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetOrganizationsByUserID",
 			Handler:    _ProfileService_GetOrganizationsByUserID_Handler,
+		},
+		{
+			MethodName: "GetUsersByIDS",
+			Handler:    _ProfileService_GetUsersByIDS_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
