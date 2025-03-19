@@ -10,7 +10,7 @@ type ApproveStatusRepository struct {
 	db *gorm.DB
 }
 
-func (a ApproveStatusRepository) Get(ctx context.Context, status string) (uint, error) {
+func (a *ApproveStatusRepository) Get(ctx context.Context, status string) (uint, error) {
 	var result model.ApproveTaskStatusModel
 	res := a.db.WithContext(ctx).
 		Where("name = ?", status).

@@ -51,7 +51,7 @@ func (r *ResponseRepository) Show(ctx context.Context, taskId uint, page int, li
 func (r *ResponseRepository) Update(ctx context.Context, id uint, status uint) error {
 	var response model.ResponseModel
 
-	res := r.db.WithContext(ctx).First(&response, "id = ?", id)
+	res := r.db.WithContext(ctx).Where("id = ?", id).First(&response)
 	if res.Error != nil {
 		return res.Error
 	}

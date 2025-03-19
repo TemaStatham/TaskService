@@ -99,7 +99,8 @@ func (h *Handler) Init(jwtSecret string) *gin.Engine {
 		{
 			responses.GET("/all", h.getResponses)
 			responses.POST("/create", h.createResponse)
-			responses.PUT("/update", h.updateResponse)
+			responses.PUT("/reject", h.confirmResponse)
+			responses.PUT("/confirm", h.rejectResponse)
 		}
 
 		// Работа с подтверждением участия пользователя

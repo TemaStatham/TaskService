@@ -22,7 +22,7 @@ func (h *Handler) createResponse(c *gin.Context) {
 		return
 	}
 
-	id, err := h.responseService.Create(c.Request.Context(), input.TaskId, authUser, input.Status)
+	id, err := h.responseService.Create(c.Request.Context(), input.TaskId, authUser)
 	if err != nil {
 		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
@@ -59,7 +59,7 @@ func (h *Handler) getResponses(c *gin.Context) {
 	})
 }
 
-func (h *Handler) updateResponse(c *gin.Context) {
+func (h *Handler) rejectResponse(c *gin.Context) {
 	_, err := auth.GetUserId(c)
 	if err != nil {
 		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
@@ -73,7 +73,32 @@ func (h *Handler) updateResponse(c *gin.Context) {
 		return
 	}
 
-	err = h.responseService.Update(c.Request.Context(), input.ID, input.Status)
+	err = h.responseService.Update(c.Request.Context(), input.ID, "Отказано")
+	if err != nil {
+		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, map[string]interface{}{
+		"status": "success",
+	})
+}
+
+func (h *Handler) confirmResponse(c *gin.Context) {
+	_, err := auth.GetUserId(c)
+	if err != nil {
+		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	var input data.UpdateResponse
+
+	if err := c.BindJSON(&input); err != nil {
+		response.NewErrorResponse(c, http.StatusBadRequest, InvalidInputBodyErr)
+		return
+	}
+
+	err = h.responseService.Update(c.Request.Context(), input.ID, "Принято")
 	if err != nil {
 		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return

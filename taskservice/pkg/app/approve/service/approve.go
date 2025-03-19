@@ -22,7 +22,7 @@ type ApproveService struct {
 func NewApproveService(
 	repository model.ApproveRepositoryInterface,
 	approvestatusrepo model.ApproveTaskStatusReadRepositoryInterface,
-) *ApproveService {
+) ApproveServiceInterface {
 	return &ApproveService{
 		repository:        repository,
 		approvestatusrepo: approvestatusrepo,

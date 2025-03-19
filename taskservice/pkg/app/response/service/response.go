@@ -6,25 +6,37 @@ import (
 )
 
 type ResponseServiceInterface interface {
-	Update(ctx context.Context, id uint, status uint) error
-	Create(ctx context.Context, taskId, userId uint, status uint) (uint, error)
+	Update(ctx context.Context, id uint, statusName string) error
+	Create(ctx context.Context, taskId, userId uint) (uint, error)
 }
 
 type ResponseService struct {
-	responseRepository model.ResponseRepositoryInterface
+	responseRepository       model.ResponseRepositoryInterface
+	responseStatusRepository model.ResponseStatusRepositoryInterface
 }
 
-func NewResponseService(responseRepository model.ResponseRepositoryInterface) *ResponseService {
+func NewResponseService(responseRepository model.ResponseRepositoryInterface,
+	responseStatusRepository model.ResponseStatusRepositoryInterface) *ResponseService {
 	return &ResponseService{
-		responseRepository: responseRepository,
+		responseRepository:       responseRepository,
+		responseStatusRepository: responseStatusRepository,
 	}
 }
 
-func (r *ResponseService) Update(ctx context.Context, id uint, status uint) error {
-	return r.responseRepository.Update(ctx, id, status)
+func (r *ResponseService) Update(ctx context.Context, id uint, statusName string) error {
+	status, err := r.responseStatusRepository.GetStatus(ctx, statusName)
+	if err != nil {
+		return err
+	}
+
+	return r.responseRepository.Update(ctx, id, status.ID)
 }
 
-func (r *ResponseService) Create(ctx context.Context, taskId, userId uint, status uint) (uint, error) {
-	// TODO: написать логику получения статуса, и какой id передать нужно понять. Вынести в data
-	return r.responseRepository.Create(ctx, model.ResponseModel{UserID: userId, TaskID: taskId, StatusID: status})
+func (r *ResponseService) Create(ctx context.Context, taskId, userId uint) (uint, error) {
+	status, err := r.responseStatusRepository.GetStatus(ctx, "На рассмотрении")
+	if err != nil {
+		return 0, err
+	}
+
+	return r.responseRepository.Create(ctx, model.ResponseModel{UserID: userId, TaskID: taskId, StatusID: status.ID})
 }

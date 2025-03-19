@@ -68,7 +68,8 @@ func NewContainer(config config.Config) *Container {
 
 	responseRepository := postgres2.NewResponsePostgresRepository(db)
 	responseQuery := responsequery.NewResponseQuery(responseRepository)
-	responseService := responseservice.NewResponseService(responseRepository)
+	responsestatusRepo := postgres2.NewResponseStatusRepository(db)
+	responseService := responseservice.NewResponseService(responseRepository, responsestatusRepo)
 
 	commentResponse := postgres2.NewCommentsRepository(db)
 	commentQuery := commentquery.NewCommentQuery(commentResponse)
