@@ -15,5 +15,5 @@ kafka:
   groups_topic: "groups_topic"
   group_id: "users_topic"
 address:
-  "grpc-server:50501"
+  "profileservicetest:50501"
 jwt_secret: "secretJWT"

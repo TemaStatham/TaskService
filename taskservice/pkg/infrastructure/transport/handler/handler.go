@@ -14,6 +14,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 const (
@@ -59,11 +60,22 @@ func NewTaskHandler(
 func (h *Handler) Init(jwtSecret string) *gin.Engine {
 	router := gin.New()
 
-	router.Use(cors.Default())
+	config := cors.Config{
+		AllowOrigins:     []string{"*"}, // Разрешает все домены (можно указать конкретные)
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Authorization", "Content-Type"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}
+
+	router.Use(cors.New(config))
 
 	httphands := router.Group("/api")
 	{
+		httphands.Use(cors.New(config))
 		httphands.Use(auth.UserIdentity(jwtSecret))
+		httphands.Static("/uploads", "./uploads")
 		// Добавление, удаление, получение волонтеров или координаторов
 		tasksUsers := httphands.Group("/tasks-users")
 		{
@@ -93,7 +105,10 @@ func (h *Handler) Init(jwtSecret string) *gin.Engine {
 		// Работа с подтверждением участия пользователя
 		approves := httphands.Group("/approves")
 		{
+			approves.GET("/allByTaskID/:id", h.getAllByTaskID)
 			approves.POST("/create", h.addApproves)
+			approves.PUT("/reject", h.rejectApproves)
+			approves.PUT("/confirm", h.confirmApproves)
 		}
 	}
 

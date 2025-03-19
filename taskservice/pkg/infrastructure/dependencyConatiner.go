@@ -75,7 +75,8 @@ func NewContainer(config config.Config) *Container {
 	commentService := commentservice.NewCommentService(commentResponse)
 
 	approveRepository := postgres2.NewApproveRepository(db)
-	approveService := approveservice.NewApproveService(approveRepository)
+	approveStatusRepository := postgres2.NewApproveStatusRepository(db)
+	approveService := approveservice.NewApproveService(approveRepository, approveStatusRepository)
 
 	grpcClient, err := grpc.NewGrpcClient(config.Address)
 	if err != nil {

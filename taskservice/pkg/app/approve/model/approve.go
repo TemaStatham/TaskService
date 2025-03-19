@@ -3,6 +3,7 @@ package model
 import (
 	"context"
 	"github.com/TemaStatham/TaskService/taskservice/pkg/app/approve/data"
+	"github.com/TemaStatham/TaskService/taskservice/pkg/infrastructure/lib/paginate"
 	"time"
 )
 
@@ -50,6 +51,20 @@ func (File) TableName() string {
 	return "file"
 }
 
+type ApproveReadRepositoryInterface interface {
+	Show(ctx context.Context, dto data.ShowApproves) (paginate.Pagination, error)
+}
+
 type ApproveRepositoryInterface interface {
-	Create(ctx context.Context, approve data.CreateApprove) error
+	ApproveReadRepositoryInterface
+	Create(ctx context.Context, dto data.CreateApprove, status uint) error
+	Update(ctx context.Context, dto data.SetStatusApprove) error
+}
+
+type ApproveTaskStatusReadRepositoryInterface interface {
+	Get(ctx context.Context, status string) (uint, error)
+}
+
+type FileReadRepositoryInterface interface {
+	Show(ctx context.Context, dto data.ShowApproves) (paginate.Pagination, error)
 }

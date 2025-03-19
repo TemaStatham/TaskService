@@ -49,7 +49,7 @@ type Message struct {
 	Type   string `json:"type"`
 	TaskID uint   `json:"task_id"`
 	Data   string `json:"data"`
-	UserID uint   `json:"user_id"`
+	UserID uint   `json:"user_id"` // todo: передать в строке подключения
 }
 
 func NewHub(

@@ -6,9 +6,9 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 COPY proto/profile/ proto/profile/
-COPY server/ server/
+COPY profileservicetest/ profileservicetest/
 
-RUN go build -v -o main ./server
+RUN go build -v -o main ./profileservicetest
 
 FROM alpine:latest
 

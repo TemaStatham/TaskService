@@ -6,9 +6,9 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 COPY proto/profile/ proto/profile
-COPY client/ client/
+COPY taskservice/ taskservice/
 
-RUN go build -v -o main ./client/cmd
+RUN go build -v -o main ./taskservice/cmd
 
 FROM alpine:latest
 

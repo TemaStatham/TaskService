@@ -7,6 +7,10 @@ type GetTasksUsers struct {
 	IsCoordinators *bool `json:"is_coordinators"`
 }
 
+type GetTasksUsersResponse struct {
+	// users paginations
+}
+
 type AddTasksUsers struct {
 	TaskID        uint `json:"task_id"`
 	UserID        uint `json:"user_id"`
