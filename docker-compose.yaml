@@ -1,41 +1,67 @@
 services:
-  grpc-proto:
+  profile-proto:
     build:
       context: .
-      dockerfile: ./functions/Dockerfile
+      dockerfile: ./proto/profile/Dockerfile
     image: profileserviceproto-go:v1.0
     volumes:
-      - ./functions:/opt/functions
+      - ./proto/profile:/opt/proto/profile
     command: >
-      sh -c "protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative functions.proto"
+      sh -c "protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative profile.proto"
     networks:
       - grpc
 
-  grpc-server:
+#  notification-proto:
+#    build:
+#      context: .
+#      dockerfile: ./proto/notification/Dockerfile
+#    image: notificationeserviceproto-go:v1.0
+#    volumes:
+#      - ./proto/notification:/opt/proto/notification
+#    command: >
+#      sh -c "protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative notificationservice.proto"
+#    networks:
+#      - grpc
+
+  profileservicetest:
     build:
       context: .
-      dockerfile: ./server/Dockerfile
+      dockerfile: ./profileservicetest/Dockerfile
     image: profileservice-go:v1.0
     ports:
       - "50501:50501"
     networks:
       - grpc
     depends_on:
-      - grpc-proto
+      - profile-proto
 
-  grpc-client:
+  taskservice:
     build:
       context: .
-      dockerfile: ./client/Dockerfile
+      dockerfile: ./taskservice/Dockerfile
     image: taskservice-go:v2.0
     networks:
       - grpc
     depends_on:
-      - grpc-server
+      - profileservicetest
     environment:
       - SERVER_HOST=grpc-server:50501
     ports:
       - "8080:8080"
+
+#  notificationservice:
+#    build:
+#      context: .
+#      dockerfile: ./notificationservice/Dockerfile
+#    image: notificationservice-go:v2.0
+#    networks:
+#      - grpc
+#    depends_on:
+#      - notification-proto
+#    environment:
+#      - SERVER_HOST=grpc-server:50501
+#    ports:
+#      - "8080:8080"
 
   dapomogu_task_postgres:
     container_name: dapomogu_task_postgres
@@ -63,7 +89,7 @@ services:
     depends_on:
       - dapomogu_task_postgres
     command: [
-      "-path", "./migrations",
+      "-path", "./taskservice/migrations",
       "-database", "postgres://postgres:dapomogu_password@dapomogu_task_postgres:5432/dapomogu_task_postgres_db?sslmode=disable",
       "up"
     ]

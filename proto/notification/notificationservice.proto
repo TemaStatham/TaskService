@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+option go_package = "github.com/TemaStatham/TaskService/proto/notification";
+package functions;
+
+service NotificationService {
+  rpc SendNotification(NotificationRequest) returns (NotificationResponse) {}
+}
+
+message NotificationRequest {
+  uint32 type = 1;
+  uint64 userID = 2;
+  string data = 3;
+}
+
+message NotificationResponse {
+  string status = 1;
+}
